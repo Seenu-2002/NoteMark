@@ -1,7 +1,11 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+    id("io.kotzilla.kotzilla-plugin")
 }
 
 android {
@@ -16,7 +20,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "X_USER_EMAIL", project.properties["xUserEmailHeader"].toString())
     }
+
 
     buildTypes {
         release {
@@ -36,7 +43,9 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
+
 }
 
 dependencies {
@@ -57,5 +66,31 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Splash screen API
     implementation(libs.core.splashscreen)
+    // Ktor
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.serialization.jvm)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.client.kotlinx.serialization)
+    implementation(libs.ktor.client.content.negotiation)
+    // Koin
+    implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.android)
+    // Kotzilla
+    implementation(libs.kotzilla.sdk)
+    // Kotlin Serialization
+    implementation(libs.kotlinx.serialization.json)
+    // Timber
+    implementation(libs.timber)
+    // Navigation Compose
+    implementation(libs.androidx.navigation.compose)
+    // Constraint layout
+    implementation(libs.androidx.constraintlayout.compose)
+    // Adaptive layout
+    implementation(libs.androidx.material3.window.size.class1)
+    // Encrypted shared preferences
+    implementation(libs.androidx.security.crypto)
+
 }

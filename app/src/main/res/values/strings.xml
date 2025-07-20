@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">NoteMark</string>
+
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login_btn">Login</string>
+    <string name="create_account">Create account</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="login_header">Log In</string>
+    <string name="login_message">Capture your thoughts and ideas.</string>
+    <string name="email_placeholder">john.doe@example</string>
+    <string name="onboarding_header">Your Own Collection of Notes</string>
+    <string name="onboarding_get_started">Get Started</string>
+
+    <!--    Validation Error Messages-->
+    <string name="user_name_less_than_3">Username must be at least 3 characters.</string>
+    <string name="user_name_not_more_than_20">Username can’t be longer than 20 characters.</string>
+    <string name="invalid_email_address">Invalid email provided</string>
+    <string name="password_less_than_8">Password must be at least 8 characters and include a number or symbol.</string>
+    <string name="password_do_not_match">Passwords do not match</string>
+
 </resources>
