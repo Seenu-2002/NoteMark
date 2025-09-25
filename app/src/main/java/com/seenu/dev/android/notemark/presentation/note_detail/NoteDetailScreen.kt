@@ -55,6 +55,8 @@ fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
         viewModel.init(noteId)
     }
 
+    val isInCreateMode by viewModel.isInCreateMode.collectAsStateWithLifecycle()
+
     val activity = LocalActivity.current ?: return
     val windowSizeClass = calculateWindowSizeClass(activity)
     val deviceConfiguration = DeviceConfiguration.fromWindowSizeClass(windowSizeClass)
@@ -107,7 +109,14 @@ fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
                             }
                         } else {
                             IconButton(onClick = {
-                                viewModel.setShowDiscardChangesDialog(true)
+                                if (isInCreateMode && !viewModel.hasChanges()) {
+                                    (note as? UiState.Success)?.data?.id?.let { id ->
+                                        viewModel.deleteNote(id)
+                                    }
+                                    onBack() // FIXME: Back press dispatcher
+                                } else {
+                                    viewModel.setShowDiscardChangesDialog(true)
+                                }
                             }) {
                                 Icon(
                                     painter = painterResource(R.drawable.ic_close),
@@ -160,7 +169,7 @@ fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
                             content = content,
                             createdTime = noteState.data.createdAtFormattedWithTime,
                             lastEditedTime = noteState.data.lastModifiedFormattedWithTime,
-                            isInEditMode = isInEditMode,
+                            isInEditMode = isInEditMode || isInCreateMode,
                             onTitleChange = viewModel::onTitleChange,
                             onContentChange = viewModel::onContentChange
                         )
@@ -184,24 +193,27 @@ fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
                         }
                     }
 
-                    val selectedAction = when {
-                        isInEditMode -> NoteDetailAction.EDIT
-                        isInReaderMode -> NoteDetailAction.READER_MODE
-                        else -> NoteDetailAction.NONE
-                    }
-                    NoteDetailFloatingActionBar(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 24.dp),
-                        selectedAction = selectedAction,
-                        onActionClicked = { action ->
-                            if (action == NoteDetailAction.EDIT) {
-                                viewModel.setEditMode(true)
-                            } else if (action == NoteDetailAction.READER_MODE) {
-                                // TODO: Implement reader mode
-                            }
+                    // No need to show edit / reader mode when the user while creating a new note
+                    if (!isInCreateMode) {
+                        val selectedAction = when {
+                            isInEditMode -> NoteDetailAction.EDIT
+                            isInReaderMode -> NoteDetailAction.READER_MODE
+                            else -> NoteDetailAction.NONE
                         }
-                    )
+                        NoteDetailFloatingActionBar(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 24.dp),
+                            selectedAction = selectedAction,
+                            onActionClicked = { action ->
+                                if (action == NoteDetailAction.EDIT) {
+                                    viewModel.setEditMode(true)
+                                } else if (action == NoteDetailAction.READER_MODE) {
+                                    // TODO: Implement reader mode
+                                }
+                            }
+                        )
+                    }
                 }
 
                 is UiState.Error -> {

@@ -21,7 +21,7 @@ interface NotesDao {
     fun getNoteFlow(id: Long): Flow<NoteEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNote(note: NoteEntity)
+    suspend fun insertNote(note: NoteEntity): Long
 
     @Update
     suspend fun updateNote(note: NoteEntity)

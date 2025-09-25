@@ -10,7 +10,7 @@ fun NoteEntity.toDomain(): Note {
         title = this.title,
         content = this.content,
         createdAt = Date(this.createdAt),
-        lastModified = Date(this.lastModified),
+        lastModifiedAt = Date(this.lastModified),
     )
 }
 
@@ -20,6 +20,6 @@ fun Note.toEntity(): NoteEntity {
         title = this.title,
         content = this.content,
         createdAt = this.createdAt.time,
-        lastModified = this.lastModified.time,
+        lastModified = this.lastModifiedAt.time,
     )
 }

@@ -8,5 +8,5 @@ data class Note constructor(
     val title: String,
     val content: String,
     val createdAt: Date,
-    val lastModified: Date,
+    val lastModifiedAt: Date,
 )

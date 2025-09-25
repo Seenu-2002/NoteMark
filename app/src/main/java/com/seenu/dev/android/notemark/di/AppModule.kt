@@ -7,6 +7,8 @@ import com.seenu.dev.android.notemark.data.notes_repository.NotesRepository
 import com.seenu.dev.android.notemark.data.notes_repository.NotesRepositoryImpl
 import com.seenu.dev.android.notemark.data.room.NotesDatabase
 import com.seenu.dev.android.notemark.data.session.SessionManagerImpl
+import com.seenu.dev.android.notemark.domain.CreateEmptyNoteUseCase
+import com.seenu.dev.android.notemark.domain.DeleteNoteUseCase
 import com.seenu.dev.android.notemark.domain.GetNoteFlowUseCase
 import com.seenu.dev.android.notemark.domain.GetNoteUseCase
 import com.seenu.dev.android.notemark.domain.GetNotesUseCase
@@ -77,6 +79,16 @@ val appModule = module {
     }
     single {
         UpdateNoteUseCase(
+            repository = get()
+        )
+    }
+    single {
+        CreateEmptyNoteUseCase(
+            repository = get()
+        )
+    }
+    single {
+        DeleteNoteUseCase(
             repository = get()
         )
     }

@@ -1,5 +1,6 @@
 package com.seenu.dev.android.notemark.presentation.note_detail.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,12 +9,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.seenu.dev.android.notemark.R
@@ -49,6 +53,7 @@ private fun NoteDetailComponentPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteDetailComponent(
     modifier: Modifier = Modifier,
@@ -68,43 +73,57 @@ fun NoteDetailComponent(
             value = title,
             onValueChange = onTitleChange,
             textStyle = MaterialTheme.typography.titleLarge,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
                     16.dp
-                )
+                ),
+            decorationBox = @Composable { innerTextField ->
+                if (title.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.note_title_placeholder),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+                innerTextField.invoke()
+            }
         )
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surface)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Column(modifier = Modifier.weight(1F)) {
-                Text(
-                    text = stringResource(R.string.date_created),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = createdTime,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            Column(modifier = Modifier.weight(1F)) {
-                Text(
-                    text = stringResource(R.string.last_edited),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = lastEditedTime,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+        AnimatedVisibility(visible = !isInEditMode) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Column(modifier = Modifier.weight(1F)) {
+                    Text(
+                        text = stringResource(R.string.date_created),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = createdTime,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                Column(modifier = Modifier.weight(1F)) {
+                    Text(
+                        text = stringResource(R.string.last_edited),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = lastEditedTime,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
         HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surface)
@@ -112,6 +131,9 @@ fun NoteDetailComponent(
             readOnly = !isInEditMode,
             value = content,
             onValueChange = onContentChange,
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1F)
@@ -119,6 +141,17 @@ fun NoteDetailComponent(
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             ),
+            decorationBox = @Composable { innerTextField ->
+                if (content.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.note_content_placeholder),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    )
+                }
+                innerTextField.invoke()
+            }
         )
     }
 }

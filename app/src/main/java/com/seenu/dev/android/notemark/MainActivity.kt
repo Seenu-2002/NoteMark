@@ -61,8 +61,8 @@ class MainActivity : ComponentActivity() {
                         ScreenContainer(
                             showDarkIcons = true
                         ) {
-                            NotesListScreen(userName, openNote = { note ->
-                                navController.navigate(Screen.NoteDetail(note.id))
+                            NotesListScreen(userName, openNote = { noteId ->
+                                navController.navigate(Screen.NoteDetail(noteId))
                             })
                         }
                     }

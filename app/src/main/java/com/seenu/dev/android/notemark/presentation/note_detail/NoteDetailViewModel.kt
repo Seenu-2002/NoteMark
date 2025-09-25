@@ -2,9 +2,12 @@ package com.seenu.dev.android.notemark.presentation.note_detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.seenu.dev.android.notemark.domain.CreateEmptyNoteUseCase
+import com.seenu.dev.android.notemark.domain.DeleteNoteUseCase
 import com.seenu.dev.android.notemark.domain.GetNoteFlowUseCase
 import com.seenu.dev.android.notemark.domain.UpdateNoteUseCase
 import com.seenu.dev.android.notemark.presentation.UiState
+import com.seenu.dev.android.notemark.presentation.common.CREATE_NEW_NOTE_ID
 import com.seenu.dev.android.notemark.presentation.common.models.NotesUiModel
 import com.seenu.dev.android.notemark.presentation.mapper.toDomain
 import com.seenu.dev.android.notemark.presentation.mapper.toUiModel
@@ -25,6 +28,8 @@ class NoteDetailViewModel : ViewModel(), KoinComponent {
 
     private val getNoteFlowUseCase by inject<GetNoteFlowUseCase>()
     private val updateNoteUseCase by inject<UpdateNoteUseCase>()
+    private val createEmptyNoteUseCase by inject<CreateEmptyNoteUseCase>()
+    private val deleteNoteUseCase by inject<DeleteNoteUseCase>()
 
     private val _note: MutableStateFlow<UiState<NotesUiModel>> = MutableStateFlow(UiState.Empty())
     val note: StateFlow<UiState<NotesUiModel>> = _note.asStateFlow()
@@ -41,10 +46,23 @@ class NoteDetailViewModel : ViewModel(), KoinComponent {
     private val _updateStatus: MutableSharedFlow<UiState<Unit>> = MutableSharedFlow()
     val updateStatus: SharedFlow<UiState<Unit>> = _updateStatus.asSharedFlow()
 
+    private val _isInCreateMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val isInCreateMode: StateFlow<Boolean> = _isInCreateMode.asStateFlow()
+
     fun init(noteId: Long) {
         viewModelScope.launch {
+            if (noteId == CREATE_NEW_NOTE_ID) {
+                Timber.d("Initializing NoteDetailViewModel in create mode")
+                _isInCreateMode.value = true
+                _isInEditMode.value = true
+                createEmptyNote()
+                return@launch
+            }
+
+            Timber.d("Initializing NoteDetailViewModel with noteId: $noteId")
             val oldNote = _note.value
             if (oldNote is UiState.Success && oldNote.data.id == noteId) {
+                Timber.d("Note already loaded, skipping fetch")
                 return@launch
             }
 
@@ -57,10 +75,27 @@ class NoteDetailViewModel : ViewModel(), KoinComponent {
                     }
                     val notesUiModel = note.toUiModel()
                     _note.value = UiState.Success(notesUiModel)
+
+                    if (_isInCreateMode.value) {
+                        _editNoteState.value = EditNoteUiState(
+                            title = note.title,
+                            content = note.content
+                        )
+                    }
                 } catch (exp: Exception) {
                     _note.value = UiState.Error(exp.message ?: "An error occurred")
                 }
             }
+        }
+    }
+
+    fun createEmptyNote() {
+        viewModelScope.launch {
+            Timber.d("Creating empty note")
+            _note.value = UiState.Loading()
+            val id = createEmptyNoteUseCase.invoke()
+            init(id)
+            Timber.d("Empty note created with id: $id")
         }
     }
 
@@ -82,6 +117,7 @@ class NoteDetailViewModel : ViewModel(), KoinComponent {
                 Timber.e(exp, "Error updating note")
                 _updateStatus.emit(UiState.Error(exp.message ?: "An error occurred"))
             } finally {
+                _isInCreateMode.value = false
                 _editNoteState.value = null
                 _isInEditMode.value = false
             }
@@ -114,21 +150,50 @@ class NoteDetailViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    fun setShowDiscardChangesDialog(show: Boolean) {
-        _editNoteState.value?.let {
-            val note = (_note.value as? UiState.Success<NotesUiModel>)?.data
-                ?: return
-            val hasChanges = it.title != note.title || it.content != note.content
+    fun hasChanges(): Boolean {
+        val note = (_note.value as? UiState.Success<NotesUiModel>)?.data
+            ?: return false
+        return _editNoteState.value?.let {
+            it.title != note.title || it.content != note.content
+        } ?: false
+    }
 
-            if (hasChanges) {
-                _editNoteState.value = _editNoteState.value?.copy(showDiscardChangesDialog = show)
-            } else {
-                _editNoteState.value = null
+    fun setShowDiscardChangesDialog(show: Boolean) {
+        viewModelScope.launch {
+            Timber.d("setShowDiscardChangesDialog: $show")
+            val note = (_note.value as? UiState.Success<NotesUiModel>)?.data
+                ?: return@launch
+            _editNoteState.value?.let {
+                val hasChanges = it.title != note.title || it.content != note.content
+
+                Timber.d("Has changes: $hasChanges")
+                if (hasChanges) {
+                    _editNoteState.value =
+                        _editNoteState.value?.copy(showDiscardChangesDialog = show)
+                } else {
+                    if (_isInCreateMode.value) {
+                        Timber.d("Deleting note as no changes found and in create mode")
+                        deleteNoteUseCase(note.id)
+                    }
+                    _editNoteState.value = null
+                    _isInEditMode.value = false
+                }
+            } ?: run {
+                Timber.d("No edit state found")
+                if (_isInCreateMode.value) {
+                    Timber.d("Deleting note as no edit state")
+                    deleteNote(note.id)
+                }
+
                 _isInEditMode.value = false
+                _editNoteState.value = null
             }
-        } ?: run {
-            _isInEditMode.value = false
-            _editNoteState.value = null
+        }
+    }
+
+    fun deleteNote(id: Long) {
+        viewModelScope.launch {
+            deleteNoteUseCase(id)
         }
     }
 

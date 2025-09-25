@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.seenu.dev.android.notemark.R
 import com.seenu.dev.android.notemark.presentation.UiState
+import com.seenu.dev.android.notemark.presentation.common.CREATE_NEW_NOTE_ID
 import com.seenu.dev.android.notemark.presentation.common.models.NotesUiModel
 import com.seenu.dev.android.notemark.presentation.notes_list.components.GradientIconButton
 import com.seenu.dev.android.notemark.presentation.notes_list.components.NotePreviewCard
@@ -50,7 +51,7 @@ import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun NotesListScreen(userName: String, openNote: (NotesUiModel) -> Unit = {}) {
+fun NotesListScreen(userName: String, openNote: (id: Long) -> Unit = {}) {
 
     val activity = LocalActivity.current ?: return
     val windowSizeClass = calculateWindowSizeClass(activity)
@@ -93,7 +94,9 @@ fun NotesListScreen(userName: String, openNote: (NotesUiModel) -> Unit = {}) {
                 modifier = Modifier
                     .padding(end = 8.dp, bottom = bottomPadding)
                     .size(56.dp),
-                onClick = { /* Handle click */ },
+                onClick = {
+                    openNote(CREATE_NEW_NOTE_ID)
+                },
                 shape = RoundedCornerShape(16.dp),
                 gradient = Brush.verticalGradient(
                     colors = listOf(
@@ -139,7 +142,7 @@ fun NotesListScreen(userName: String, openNote: (NotesUiModel) -> Unit = {}) {
                         deviceConfiguration = deviceConfiguration,
                         notes = notesState.data,
                         onNoteClick = { note ->
-                            openNote(note)
+                            openNote(note.id)
                         }
                     )
                 }
