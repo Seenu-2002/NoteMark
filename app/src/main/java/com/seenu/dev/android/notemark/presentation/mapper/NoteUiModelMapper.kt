@@ -16,8 +16,8 @@ fun Note.toUiModel(): NotesUiModel {
         createdAt = this.createdAt,
         createdAtFormatted = mapDate(this.createdAt),
         createdAtFormattedWithTime = mapDateWithTime(this.createdAt),
-        lastModifiedAt = this.lastModified,
-        lastModifiedFormattedWithTime = mapDateWithTime(this.lastModified)
+        lastModifiedAt = this.lastModifiedAt,
+        lastModifiedFormattedWithTime = mapDateWithTime(this.lastModifiedAt)
     )
 }
 
@@ -27,7 +27,7 @@ fun NotesUiModel.toDomain(): Note {
         title = this.title,
         content = this.content,
         createdAt = this.createdAt,
-        lastModified = this.lastModifiedAt
+        lastModifiedAt = this.lastModifiedAt
     )
 }
 

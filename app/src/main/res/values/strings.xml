@@ -24,6 +24,8 @@
     <string name="discard_confirm">Discard</string>
     <string name="discard_cancel">Keep Editing</string>
     <string name="note_update_failed">Unable to update notes!</string>
+    <string name="note_title_placeholder">Note Title</string>
+    <string name="note_content_placeholder">Tap to enter note content</string>
 
     <!--    Validation Error Messages-->
     <string name="user_name_less_than_3">Username must be at least 3 characters.</string>

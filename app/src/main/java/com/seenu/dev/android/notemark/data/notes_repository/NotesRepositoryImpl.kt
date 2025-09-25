@@ -31,7 +31,7 @@ class NotesRepositoryImpl constructor(
         }
     }
 
-    override suspend fun insertNote(note: Note) {
+    override suspend fun insertNote(note: Note): Long {
         return withContext(Dispatchers.IO) {
             notesDao.insertNote(note.toEntity())
         }
