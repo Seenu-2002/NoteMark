@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     id("io.kotzilla.kotzilla-plugin")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -92,5 +93,9 @@ dependencies {
     implementation(libs.androidx.material3.window.size.class1)
     // Encrypted shared preferences
     implementation(libs.androidx.security.crypto)
+    // Room
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
 }

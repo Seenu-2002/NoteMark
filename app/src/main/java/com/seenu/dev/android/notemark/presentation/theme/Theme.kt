@@ -1,12 +1,10 @@
 package com.seenu.dev.android.notemark.presentation.theme
 
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -31,6 +29,12 @@ private val LightColorScheme = lightColorScheme(
 
 val ColorScheme.onboardingBackground: Color
     get() = OnboardingBackground
+
+val ColorScheme.fabGradientStart: Color
+    get() = FABGradientStart
+
+val ColorScheme.fabGradientEnd: Color
+    get() = FABGradientEnd
 
 val Shapes = Shapes(
     extraSmall = RoundedCornerShape(5.dp),
