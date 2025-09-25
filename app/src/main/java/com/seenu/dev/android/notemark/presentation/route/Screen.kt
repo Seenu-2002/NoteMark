@@ -15,10 +15,10 @@ sealed interface Screen {
     data object Onboarding: Screen
 
     @Serializable
-    data object NotesList: Screen
+    data class NotesList constructor(val userName: String): Screen
 
     @Serializable
-    data object NoteDetail: Screen
+    data class NoteDetail constructor(val noteId: Long): Screen
 
     @Serializable
     data object NoteCreate: Screen

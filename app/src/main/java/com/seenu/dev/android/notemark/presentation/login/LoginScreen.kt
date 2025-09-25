@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.seenu.dev.android.notemark.data.User
 import com.seenu.dev.android.notemark.presentation.UiState
 import com.seenu.dev.android.notemark.presentation.login.components.LoginForm
 import com.seenu.dev.android.notemark.presentation.login.components.LoginHeader
@@ -32,7 +32,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LoginScreen(
-    onLogin: () -> Unit = {},
+    onLogin: (User) -> Unit = {},
     onRegister: () -> Unit = {}
 ) {
 
@@ -52,7 +52,7 @@ fun LoginScreen(
 
     LaunchedEffect(loginState) {
         if (loginState.value is UiState.Success) {
-            onLogin()
+            onLogin((loginState.value as UiState.Success).data)
         }
     }
 

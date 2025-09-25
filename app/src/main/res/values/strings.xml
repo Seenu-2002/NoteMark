@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <resources>
     <string name="app_name">NoteMark</string>
 
@@ -12,6 +13,17 @@
     <string name="email_placeholder">john.doe@example</string>
     <string name="onboarding_header">Your Own Collection of Notes</string>
     <string name="onboarding_get_started">Get Started</string>
+    <string name="empty_notes_message">You’ve got an empty board,\nlet’s place your first note on it!</string>
+    <string name="all_notes">ALL NOTES</string>
+    <string name="date_created">Date created</string>
+    <string name="last_edited">Last edited</string>
+    <string name="not_supported">Feature Not Supported. Kindly contact the developer.</string>
+    <string name="save_note">SAVE NOTE</string>
+    <string name="discard_changes">Discard Changes?</string>
+    <string name="discard_changes_msg">You have unsaved changes. If you discard now, all changes will be lost.</string>
+    <string name="discard_confirm">Discard</string>
+    <string name="discard_cancel">Keep Editing</string>
+    <string name="note_update_failed">Unable to update notes!</string>
 
     <!--    Validation Error Messages-->
     <string name="user_name_less_than_3">Username must be at least 3 characters.</string>

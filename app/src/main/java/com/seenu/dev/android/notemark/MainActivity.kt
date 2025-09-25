@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -15,7 +14,10 @@ import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.seenu.dev.android.notemark.presentation.login.LoginScreen
+import com.seenu.dev.android.notemark.presentation.note_detail.NoteDetailScreen
+import com.seenu.dev.android.notemark.presentation.notes_list.NotesListScreen
 import com.seenu.dev.android.notemark.presentation.onboarding.OnboardingScreen
 import com.seenu.dev.android.notemark.presentation.route.Screen
 import com.seenu.dev.android.notemark.presentation.theme.NoteMarkTheme
@@ -31,14 +33,15 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     modifier = Modifier,
                     navController = navController,
-                    startDestination = Screen.Onboarding
+//                    startDestination = Screen.Onboarding
+                    startDestination = Screen.NotesList("Seenu nan")
                 ) {
                     composable<Screen.Login> {
                         ScreenContainer(
                             showDarkIcons = false
                         ) {
-                            LoginScreen(onLogin = {
-                                navController.navigate(Screen.NotesList) {
+                            LoginScreen(onLogin = { user ->
+                                navController.navigate(Screen.NotesList(user.userName)) {
                                     popUpTo(Screen.Login) { inclusive = true }
                                 }
                             }, onRegister = {
@@ -52,6 +55,26 @@ class MainActivity : ComponentActivity() {
                             onLogin = { navController.navigate(Screen.Login) },
                             onGetStarted = { navController.navigate(Screen.Register) }
                         )
+                    }
+                    composable<Screen.NotesList> {
+                        val userName = it.toRoute<Screen.NotesList>().userName
+                        ScreenContainer(
+                            showDarkIcons = true
+                        ) {
+                            NotesListScreen(userName, openNote = { note ->
+                                navController.navigate(Screen.NoteDetail(note.id))
+                            })
+                        }
+                    }
+                    composable<Screen.NoteDetail> {
+                        val noteId = it.toRoute<Screen.NoteDetail>().noteId
+                        ScreenContainer(
+                            showDarkIcons = true
+                        ) {
+                            NoteDetailScreen(noteId, onBack = {
+                                navController.popBackStack()
+                            })
+                        }
                     }
                 }
             }
