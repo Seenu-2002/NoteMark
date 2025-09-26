@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -51,7 +51,7 @@ import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun NotesListScreen(userName: String, openNote: (id: Long) -> Unit = {}) {
+fun NotesListScreen(userName: String, openNote: (id: Long) -> Unit = {}, openSettings: () -> Unit = {}) {
 
     val activity = LocalActivity.current ?: return
     val windowSizeClass = calculateWindowSizeClass(activity)
@@ -74,10 +74,12 @@ fun NotesListScreen(userName: String, openNote: (id: Long) -> Unit = {}) {
                     Text(text = stringResource(R.string.app_name))
                 },
                 actions = {
-                    IconButton(onClick = {
-
-                    }) {
-                        Icon(imageVector = Icons.Outlined.Settings, contentDescription = "Settings")
+                    IconButton(onClick = openSettings) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_settings),
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                     UserNameIcon(
                         name = userName,

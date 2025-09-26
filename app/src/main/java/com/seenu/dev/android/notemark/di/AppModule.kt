@@ -18,6 +18,7 @@ import com.seenu.dev.android.notemark.domain.session.SessionManager
 import com.seenu.dev.android.notemark.presentation.login.LoginViewModel
 import com.seenu.dev.android.notemark.presentation.note_detail.NoteDetailViewModel
 import com.seenu.dev.android.notemark.presentation.notes_list.NotesListViewModel
+import com.seenu.dev.android.notemark.presentation.settings.SettingsViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -55,6 +56,9 @@ val appModule = module {
     }
     viewModel {
         NoteDetailViewModel()
+    }
+    viewModel {
+        SettingsViewModel()
     }
     single {
         LoginUseCase(

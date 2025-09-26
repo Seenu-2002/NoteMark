@@ -21,9 +21,6 @@ sealed interface Screen {
     data class NoteDetail constructor(val noteId: Long): Screen
 
     @Serializable
-    data object NoteCreate: Screen
-
-    @Serializable
-    data object NoteEdit: Screen
+    data object Settings: Screen
 
 }

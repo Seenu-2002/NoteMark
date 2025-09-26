@@ -20,6 +20,7 @@ import com.seenu.dev.android.notemark.presentation.note_detail.NoteDetailScreen
 import com.seenu.dev.android.notemark.presentation.notes_list.NotesListScreen
 import com.seenu.dev.android.notemark.presentation.onboarding.OnboardingScreen
 import com.seenu.dev.android.notemark.presentation.route.Screen
+import com.seenu.dev.android.notemark.presentation.settings.SettingsScreen
 import com.seenu.dev.android.notemark.presentation.theme.NoteMarkTheme
 
 class MainActivity : ComponentActivity() {
@@ -63,6 +64,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             NotesListScreen(userName, openNote = { noteId ->
                                 navController.navigate(Screen.NoteDetail(noteId))
+                            }, openSettings = {
+                                navController.navigate(Screen.Settings)
                             })
                         }
                     }
@@ -72,6 +75,13 @@ class MainActivity : ComponentActivity() {
                             showDarkIcons = true
                         ) {
                             NoteDetailScreen(noteId, onBack = {
+                                navController.popBackStack()
+                            })
+                        }
+                    }
+                    composable<Screen.Settings> {
+                        ScreenContainer(showDarkIcons = true) {
+                            SettingsScreen(onBack = {
                                 navController.popBackStack()
                             })
                         }
