@@ -1,7 +1,8 @@
 package com.seenu.dev.android.notemark.presentation.notes_list.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -33,7 +34,7 @@ private fun NotePreviewCardPreview() {
     )
 
 
-    NoteMarkTheme { 
+    NoteMarkTheme {
         NotePreviewCard(
             note = note,
             modifier = Modifier.width(200.dp)
@@ -63,12 +64,14 @@ private fun NotePreviewCardPreviewPreviousYear() {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NotePreviewCard(
     modifier: Modifier = Modifier,
     note: NotesUiModel,
-    onClick: () -> Unit = {},
-    maxCharacterCount: Int = 150
+    maxCharacterCount: Int = 150,
+    onClick: (NotesUiModel) -> Unit = {},
+    onLongPress: (NotesUiModel) -> Unit = {},
 ) {
 
     Column(
@@ -78,7 +81,12 @@ fun NotePreviewCard(
                 color = MaterialTheme.colorScheme.surfaceContainerLowest,
                 shape = MaterialTheme.shapes.medium
             )
-            .clickable(onClick = onClick)
+            .combinedClickable(onLongClick = {
+                onLongPress(note)
+
+            }, onClick = {
+                onClick(note)
+            })
             .padding(12.dp)
     ) {
         Text(
@@ -89,7 +97,7 @@ fun NotePreviewCard(
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = note.title, style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         val content = if (note.content.length > maxCharacterCount) {
             note.content.take(maxCharacterCount) + "..."
         } else {

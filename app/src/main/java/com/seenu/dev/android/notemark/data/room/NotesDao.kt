@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 interface NotesDao {
 
     @Query("SELECT * FROM notes ORDER BY lastModified DESC")
-    suspend fun getNotes(): List<NoteEntity> // TODO: Pagination
+    fun getNotesFlow(): Flow<List<NoteEntity>> // TODO: Pagination
 
     @Query("SELECT * FROM notes WHERE id = :id")
     suspend fun getNote(id: Long): NoteEntity?

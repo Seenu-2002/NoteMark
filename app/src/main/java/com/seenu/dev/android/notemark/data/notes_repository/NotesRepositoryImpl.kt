@@ -13,10 +13,8 @@ class NotesRepositoryImpl constructor(
     private val notesDao: NotesDao
 ) : NotesRepository {
 
-    override suspend fun getNotes(): List<Note> {
-        return withContext(Dispatchers.IO) {
-            notesDao.getNotes().map { it.toDomain() }
-        }
+    override fun getNotesFlow(): Flow<List<Note>> {
+        return notesDao.getNotesFlow().map { it.map { noteEntity -> noteEntity.toDomain() } }
     }
 
     override suspend fun getNoteById(id: Long): Note? {

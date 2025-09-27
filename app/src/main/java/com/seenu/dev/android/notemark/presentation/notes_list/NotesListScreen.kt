@@ -1,6 +1,7 @@
 package com.seenu.dev.android.notemark.presentation.notes_list
 
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import com.seenu.dev.android.notemark.R
 import com.seenu.dev.android.notemark.presentation.UiState
 import com.seenu.dev.android.notemark.presentation.common.CREATE_NEW_NOTE_ID
 import com.seenu.dev.android.notemark.presentation.common.models.NotesUiModel
+import com.seenu.dev.android.notemark.presentation.notes_list.components.DeleteNoteConfirmationDialog
 import com.seenu.dev.android.notemark.presentation.notes_list.components.GradientIconButton
 import com.seenu.dev.android.notemark.presentation.notes_list.components.NotePreviewCard
 import com.seenu.dev.android.notemark.presentation.notes_list.components.UserNameIcon
@@ -58,6 +60,7 @@ fun NotesListScreen(userName: String, openNote: (id: Long) -> Unit = {}, openSet
     val deviceConfiguration = DeviceConfiguration.fromWindowSizeClass(windowSizeClass)
     val viewModel: NotesListViewModel = koinViewModel()
     val notes by viewModel.notes.collectAsState()
+    val noteToBeDeleted by viewModel.noteToBeDeleted.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.getNotes()
@@ -145,9 +148,26 @@ fun NotesListScreen(userName: String, openNote: (id: Long) -> Unit = {}, openSet
                         notes = notesState.data,
                         onNoteClick = { note ->
                             openNote(note.id)
+                        },
+                        onDeleteNote = { note ->
+                            viewModel.showDeleteNoteConfirmationDialog(note)
                         }
                     )
                 }
+            }
+
+            if (noteToBeDeleted != null) {
+                DeleteNoteConfirmationDialog(
+                    onDismissRequest = {
+                        viewModel.resetNoteToBeDeleted()
+                    },
+                    onConfirmDiscard = {
+                        noteToBeDeleted?.let {
+                            viewModel.deleteNote(it.id)
+                        }
+                        viewModel.resetNoteToBeDeleted()
+                    }
+                )
             }
         }
     }
@@ -166,12 +186,14 @@ fun NotesEmptyMessage(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NotesList(
     modifier: Modifier = Modifier,
     deviceConfiguration: DeviceConfiguration,
     notes: List<NotesUiModel>,
-    onNoteClick: (NotesUiModel) -> Unit = {}
+    onNoteClick: (NotesUiModel) -> Unit = {},
+    onDeleteNote: (NotesUiModel) -> Unit = {}
 ) {
     if (notes.isEmpty()) {
         NotesEmptyMessage(modifier)
@@ -193,10 +215,10 @@ fun NotesList(
                 NotePreviewCard(
                     note = note,
                     modifier = Modifier
-                        .padding(8.dp),
-                    onClick = {
-                        onNoteClick(note)
-                    }
+                        .padding(8.dp)
+                        .animateItem(),
+                    onClick = onNoteClick,
+                    onLongPress = onDeleteNote
                 )
             }
         }
