@@ -1,6 +1,8 @@
 package com.seenu.dev.android.notemark.presentation.note_detail.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,6 +49,7 @@ private fun NoteDetailComponentPreview() {
             createdTime = createdTime,
             lastEditedTime = lastEditedTime,
             isInEditMode = false,
+            isInReaderMode = false,
             onTitleChange = {},
             onContentChange = {}
         )
@@ -62,96 +65,112 @@ fun NoteDetailComponent(
     createdTime: String,
     lastEditedTime: String,
     isInEditMode: Boolean,
+    isInReaderMode: Boolean,
     onTitleChange: (String) -> Unit,
-    onContentChange: (String) -> Unit
+    onContentChange: (String) -> Unit,
+    onClickedDuringReaderMode: () -> Unit = { }
 ) {
-    Column(
-        modifier = modifier
-    ) {
-        BasicTextField(
-            readOnly = !isInEditMode,
-            value = title,
-            onValueChange = onTitleChange,
-            textStyle = MaterialTheme.typography.titleLarge,
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    16.dp
+    Box(modifier = modifier) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            BasicTextField(
+                readOnly = !isInEditMode,
+                value = title,
+                onValueChange = onTitleChange,
+                textStyle = MaterialTheme.typography.titleLarge,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences
                 ),
-            decorationBox = @Composable { innerTextField ->
-                if (title.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.note_title_placeholder),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                }
-                innerTextField.invoke()
-            }
-        )
-        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surface)
-        AnimatedVisibility(visible = !isInEditMode) {
-            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Column(modifier = Modifier.weight(1F)) {
-                    Text(
-                        text = stringResource(R.string.date_created),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = createdTime,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    .padding(
+                        16.dp
+                    ),
+                decorationBox = @Composable { innerTextField ->
+                    if (title.isEmpty()) {
+                        Text(
+                            text = stringResource(R.string.note_title_placeholder),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
+                    innerTextField.invoke()
                 }
-                Column(modifier = Modifier.weight(1F)) {
-                    Text(
-                        text = stringResource(R.string.last_edited),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = lastEditedTime,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surface)
-        BasicTextField(
-            readOnly = !isInEditMode,
-            value = content,
-            onValueChange = onContentChange,
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1F)
-                .padding(16.dp),
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            decorationBox = @Composable { innerTextField ->
-                if (content.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.note_content_placeholder),
-                        style = MaterialTheme.typography.bodyLarge.copy(
+            )
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surface)
+            AnimatedVisibility(visible = !isInEditMode) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1F)) {
+                        Text(
+                            text = stringResource(R.string.date_created),
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = createdTime,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1F)) {
+                        Text(
+                            text = stringResource(R.string.last_edited),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = lastEditedTime,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
-                innerTextField.invoke()
             }
-        )
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.surface)
+            BasicTextField(
+                readOnly = !isInEditMode,
+                value = content,
+                onValueChange = onContentChange,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1F)
+                    .padding(16.dp),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                decorationBox = @Composable { innerTextField ->
+                    if (content.isEmpty()) {
+                        Text(
+                            text = stringResource(R.string.note_content_placeholder),
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                    }
+                    innerTextField.invoke()
+                }
+            )
+        }
+        if (isInReaderMode) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        enabled = !isInEditMode,
+                        indication = null,
+                        interactionSource = null,
+                        onClick = onClickedDuringReaderMode
+                    )
+            )
+        }
     }
 }

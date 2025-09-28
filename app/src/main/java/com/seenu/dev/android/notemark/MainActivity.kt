@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
                         ScreenContainer(
                             showDarkIcons = true
                         ) {
-                            NoteDetailScreen(noteId, onBack = {
+                            NoteDetailScreen(noteId, onNavigateBack = {
                                 navController.popBackStack()
                             })
                         }
