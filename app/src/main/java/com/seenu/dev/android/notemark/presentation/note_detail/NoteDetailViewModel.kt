@@ -11,6 +11,8 @@ import com.seenu.dev.android.notemark.presentation.common.CREATE_NEW_NOTE_ID
 import com.seenu.dev.android.notemark.presentation.common.models.NotesUiModel
 import com.seenu.dev.android.notemark.presentation.mapper.toDomain
 import com.seenu.dev.android.notemark.presentation.mapper.toUiModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -36,6 +39,9 @@ class NoteDetailViewModel : ViewModel(), KoinComponent {
 
     private val _isInReaderMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isInReaderMode: StateFlow<Boolean> = _isInReaderMode.asStateFlow()
+
+    private val _shouldShowOtherElements: MutableStateFlow<Boolean> = MutableStateFlow(true)
+    val shouldShowOtherElements: StateFlow<Boolean> = _shouldShowOtherElements.asStateFlow()
 
     private val _isInEditMode: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isInEditMode: StateFlow<Boolean> = _isInEditMode.asStateFlow()
@@ -138,6 +144,11 @@ class NoteDetailViewModel : ViewModel(), KoinComponent {
         }
     }
 
+    fun setReaderMode(isInReaderMode: Boolean) {
+        _isInReaderMode.value = isInReaderMode
+        showOtherElements(true)
+    }
+
     fun onTitleChange(title: String) {
         if (_editNoteState.value != null) {
             _editNoteState.value = _editNoteState.value?.copy(title = title)
@@ -190,6 +201,21 @@ class NoteDetailViewModel : ViewModel(), KoinComponent {
             }
         }
     }
+
+    private var showOtherElementsJob: Job? = null
+    fun showOtherElements(show: Boolean) {
+        _shouldShowOtherElements.value = show
+        showOtherElementsJob?.cancel()
+        if (show) {
+            showOtherElementsJob = viewModelScope.launch {
+                delay(5000)
+                if (_shouldShowOtherElements.value && isActive) {
+                    _shouldShowOtherElements.value = false
+                }
+            }
+        }
+    }
+
 
     fun deleteNote(id: Long) {
         viewModelScope.launch {

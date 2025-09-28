@@ -1,11 +1,23 @@
 package com.seenu.dev.android.notemark.presentation.note_detail
 
+import android.content.pm.ActivityInfo
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,7 +59,7 @@ import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
+fun NoteDetailScreen(noteId: Long, onNavigateBack: () -> Unit) {
 
     val viewModel = koinViewModel<NoteDetailViewModel>()
     val note by viewModel.note.collectAsStateWithLifecycle()
@@ -64,6 +76,7 @@ fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
 
     val isInEditMode by viewModel.isInEditMode.collectAsStateWithLifecycle()
     val isInReaderMode by viewModel.isInReaderMode.collectAsStateWithLifecycle()
+    val shouldShowOtherElements by viewModel.shouldShowOtherElements.collectAsStateWithLifecycle()
 
     val editNoteUiState by viewModel.editNoteState.collectAsStateWithLifecycle()
 
@@ -86,6 +99,33 @@ fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
                 Toast.makeText(context, R.string.note_update_failed, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    LaunchedEffect(isInReaderMode) {
+        when (deviceConfiguration) {
+            DeviceConfiguration.MOBILE_PORTRAIT -> {
+                if (isInReaderMode) {
+                    activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                }
+            }
+
+            DeviceConfiguration.MOBILE_LANDSCAPE -> {
+                if (!isInReaderMode) {
+                    activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR
+                }
+            }
+
+            else -> { /* No op */
+            }
+        }
+    }
+
+    val onBack = {
+        if (activity.requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+            activity.requestedOrientation =
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+        onNavigateBack()
     }
 
     Scaffold(
@@ -167,29 +207,45 @@ fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
                 }
 
                 is UiState.Success -> {
-                    val component = @Composable {
-                        NoteDetailComponent(
-                            modifier = Modifier.fillMaxSize(),
-                            title = title,
-                            content = content,
-                            createdTime = noteState.data.createdAtFormattedWithTime,
-                            lastEditedTime = noteState.data.lastModifiedFormattedWithTime,
-                            isInEditMode = isInEditMode || isInCreateMode,
-                            onTitleChange = viewModel::onTitleChange,
-                            onContentChange = viewModel::onContentChange
-                        )
-                    }
+                    val component: @Composable (Modifier) -> Unit =
+                        @Composable { modifier: Modifier ->
+                            NoteDetailComponent(
+                                modifier = modifier,
+                                title = title,
+                                content = content,
+                                createdTime = noteState.data.createdAtFormattedWithTime,
+                                lastEditedTime = noteState.data.lastModifiedFormattedWithTime,
+                                isInEditMode = isInEditMode || isInCreateMode,
+                                isInReaderMode = isInReaderMode,
+                                onTitleChange = viewModel::onTitleChange,
+                                onContentChange = viewModel::onContentChange,
+                                onClickedDuringReaderMode = {
+                                    if (isInReaderMode) {
+                                        viewModel.showOtherElements(!shouldShowOtherElements)
+                                    }
+                                }
+                            )
+                        }
                     when (deviceConfiguration) {
                         DeviceConfiguration.MOBILE_PORTRAIT -> {
-                            component()
+                            component(Modifier.fillMaxWidth())
                         }
 
                         DeviceConfiguration.MOBILE_LANDSCAPE, DeviceConfiguration.TABLET_LANDSCAPE -> {
+                            val verticalScrollState = rememberScrollState()
                             MobileLandscapeView(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .animateContentSize()
+                                    .verticalScroll(verticalScrollState),
+                                shouldShowOtherElements = shouldShowOtherElements,
                                 onBack = onBack
                             ) {
-                                component()
+                                component(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .weight(1F)
+                                )
                             }
                         }
 
@@ -205,19 +261,37 @@ fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
                             isInReaderMode -> NoteDetailAction.READER_MODE
                             else -> NoteDetailAction.NONE
                         }
-                        NoteDetailFloatingActionBar(
+                        AnimatedVisibility(
+                            visible = shouldShowOtherElements,
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
                                 .padding(bottom = 24.dp),
-                            selectedAction = selectedAction,
-                            onActionClicked = { action ->
-                                if (action == NoteDetailAction.EDIT) {
-                                    viewModel.setEditMode(true)
-                                } else if (action == NoteDetailAction.READER_MODE) {
-                                    // TODO: Implement reader mode
+                            enter = slideInVertically(
+                                initialOffsetY = { fullHeight -> fullHeight },
+                                animationSpec = tween(
+                                    durationMillis = 300,
+                                    easing = FastOutSlowInEasing
+                                )
+                            ),
+                            exit = slideOutVertically(
+                                targetOffsetY = { fullHeight -> fullHeight },
+                                animationSpec = tween(
+                                    durationMillis = 300,
+                                    easing = FastOutSlowInEasing
+                                )
+                            )
+                        ) {
+                            NoteDetailFloatingActionBar(
+                                selectedAction = selectedAction,
+                                onActionClicked = { action ->
+                                    if (action == NoteDetailAction.EDIT) {
+                                        viewModel.setEditMode(true)
+                                    } else if (action == NoteDetailAction.READER_MODE) {
+                                        viewModel.setReaderMode(!isInReaderMode)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
 
@@ -247,24 +321,36 @@ fun NoteDetailScreen(noteId: Long, onBack: () -> Unit) {
 fun MobileLandscapeView(
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
-    content: @Composable () -> Unit
+    shouldShowOtherElements: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    Row(modifier = modifier) {
-        Box(modifier = Modifier.weight(1F), contentAlignment = Alignment.Center) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_chevron_left),
-                        contentDescription = "Back to all notes"
+    Column(modifier = modifier) {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            androidx.compose.animation.AnimatedVisibility(
+                visible = shouldShowOtherElements,
+                enter = slideInVertically(
+                    initialOffsetY = { fullHeight -> -fullHeight },
+                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                ),
+                exit = slideOutVertically(
+                    targetOffsetY = { fullHeight -> -fullHeight },
+                    animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                )
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_chevron_left),
+                            contentDescription = "Back to all notes"
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.all_notes),
+                        style = MaterialTheme.typography.titleXSmall
                     )
                 }
-                Text(
-                    text = stringResource(R.string.all_notes),
-                    style = MaterialTheme.typography.titleXSmall
-                )
             }
         }
         content()
-        Box(modifier = Modifier.weight(1F))
     }
 }
