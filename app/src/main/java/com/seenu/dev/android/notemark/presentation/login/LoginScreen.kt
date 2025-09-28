@@ -29,6 +29,7 @@ import com.seenu.dev.android.notemark.presentation.login.components.LoginForm
 import com.seenu.dev.android.notemark.presentation.login.components.LoginHeader
 import com.seenu.dev.android.notemark.presentation.login.components.LoginPageField
 import org.koin.androidx.compose.koinViewModel
+import timber.log.Timber
 
 @Composable
 fun LoginScreen(
@@ -41,7 +42,7 @@ fun LoginScreen(
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var enableLoginButton by rememberSaveable { mutableStateOf(false) }
-    val loginState = viewmodel.loginState.collectAsStateWithLifecycle()
+    val loginState by viewmodel.loginState.collectAsStateWithLifecycle()
 
     var emailFieldError by rememberSaveable { mutableStateOf<ValidationError?>(null) }
     var passwordFieldError by rememberSaveable { mutableStateOf<ValidationError?>(null) }
@@ -51,8 +52,9 @@ fun LoginScreen(
     var focusedField by rememberSaveable { mutableStateOf<LoginPageField?>(null) }
 
     LaunchedEffect(loginState) {
-        if (loginState.value is UiState.Success) {
-            onLogin((loginState.value as UiState.Success).data)
+        Timber.d("Login state changed: $loginState")
+        if (loginState is UiState.Success) {
+            onLogin((loginState as UiState.Success).data)
         }
     }
 
@@ -84,7 +86,7 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxSize(),
                 email = email,
                 password = password,
-                isLoggingIn = loginState.value is UiState.Loading,
+                isLoggingIn = loginState is UiState.Loading,
                 emailFocusRequester = emailFocusRequester,
                 passwordFocusRequester = passwordFocusRequester,
                 enableLoginButton = enableLoginButton,
@@ -104,7 +106,7 @@ fun LoginScreen(
                 },
                 onLoginClick = {
                     viewmodel.login(
-                        username = email,
+                        email = email,
                         password = password
                     )
                 },

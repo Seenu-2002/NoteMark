@@ -1,4 +1,4 @@
-import org.gradle.kotlin.dsl.implementation
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -22,7 +22,15 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "X_USER_EMAIL", project.properties["xUserEmailHeader"].toString())
+        val localProps = gradleLocalProperties(rootDir, providers)
+        val xUserEmail = localProps.getProperty("xUserEmailHeader")
+            ?: throw Exception("xUserEmailHeader property not found. Please define it in your gradle.properties file.")
+        buildConfigField(
+            "String",
+            "X_USER_EMAIL",
+            xUserEmail
+        )
+        buildConfigField("String", "BASE_URL", "\"notemark.pl-coding.com\"")
     }
 
 

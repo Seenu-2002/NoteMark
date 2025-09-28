@@ -5,16 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.seenu.dev.android.notemark.R
 import com.seenu.dev.android.notemark.data.User
-import com.seenu.dev.android.notemark.data.auth_repository.AuthRepository
 import com.seenu.dev.android.notemark.domain.LoginUseCase
 import com.seenu.dev.android.notemark.presentation.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import timber.log.Timber
 
 class LoginViewModel constructor() : ViewModel(), KoinComponent {
 
@@ -23,13 +22,16 @@ class LoginViewModel constructor() : ViewModel(), KoinComponent {
     private val _loginState: MutableStateFlow<UiState<User>> = MutableStateFlow(UiState.Error())
     val loginState: StateFlow<UiState<User>> = _loginState.asStateFlow()
 
-    fun login(username: String, password: String) {
+    fun login(email: String, password: String) {
         viewModelScope.launch {
+            Timber.d("Attempting login for user")
             _loginState.value = UiState.Loading()
             try {
-                val user = loginUseCase.login(username, password)
+                val user = loginUseCase.login(email, password)
+                Timber.d("Login successful")
                 _loginState.value = UiState.Success(user)
             } catch (e: Exception) {
+                Timber.e(e, "Login failed")
                 _loginState.value = UiState.Error(e.message ?: "Login failed")
             }
         }

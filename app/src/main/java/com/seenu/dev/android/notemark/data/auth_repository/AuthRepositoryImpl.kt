@@ -6,27 +6,25 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.http.path
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import timber.log.Timber
 
 class AuthRepositoryImpl constructor(
     private val httpClient: HttpClient
 ) : AuthRepository {
 
-    companion object Companion {
-        private const val BASE_URL = "https://notemark.pl-coding.com"
-    }
-
     override suspend fun register(user: User, password: String) {
         return withContext(Dispatchers.IO) {
             val response = httpClient.post {
                 url {
-                    "${BASE_URL}/api/auth/register"
+                    path("/api/auth/register")
                 }
                 setBody(buildJsonObject {
-                    put("userName", JsonPrimitive(user.userName))
+                    put("username", JsonPrimitive(user.userName))
                     put("email", JsonPrimitive(user.email))
                     put("password", JsonPrimitive(password))
                 })
@@ -57,7 +55,7 @@ class AuthRepositoryImpl constructor(
         return withContext(Dispatchers.IO) {
             val response = httpClient.post {
                 url {
-                    "${BASE_URL}/api/auth/login"
+                    path("/api/auth/login")
                 }
                 setBody(buildJsonObject {
                     put("email", JsonPrimitive(email))
@@ -79,6 +77,7 @@ class AuthRepositoryImpl constructor(
                 }
 
                 else -> {
+                    Timber.e("Login failed with status: ${response.status.value} :: ${response.body<String>()}")
                     throw AuthException(AuthError.UNKNOWN_ERROR)
                 }
             }
@@ -89,7 +88,7 @@ class AuthRepositoryImpl constructor(
         return withContext(Dispatchers.IO) {
             val response = httpClient.post {
                 url {
-                    "${BASE_URL}/api/auth/refresh"
+                    path("/api/auth/refresh")
                 }
                 setBody(buildJsonObject {
                     put("refreshToken", JsonPrimitive(token))

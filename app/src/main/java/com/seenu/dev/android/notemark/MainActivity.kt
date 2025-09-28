@@ -34,8 +34,7 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     modifier = Modifier,
                     navController = navController,
-//                    startDestination = Screen.Onboarding
-                    startDestination = Screen.NotesList("Seenu nan")
+                    startDestination = Screen.Onboarding
                 ) {
                     composable<Screen.Login> {
                         ScreenContainer(
@@ -53,6 +52,12 @@ class MainActivity : ComponentActivity() {
                     composable<Screen.Onboarding> {
                         SetStatusBarIconColor(showDarkIcons = true)
                         OnboardingScreen(
+                            openApp = { user ->
+                                navController.navigate(Screen.NotesList(user.userName)) {
+                                    popUpTo(0) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            },
                             onLogin = { navController.navigate(Screen.Login) },
                             onGetStarted = { navController.navigate(Screen.Register) }
                         )
@@ -75,14 +80,14 @@ class MainActivity : ComponentActivity() {
                             showDarkIcons = true
                         ) {
                             NoteDetailScreen(noteId, onNavigateBack = {
-                                navController.popBackStack()
+                                navController.navigateUp()
                             })
                         }
                     }
                     composable<Screen.Settings> {
                         ScreenContainer(showDarkIcons = true) {
                             SettingsScreen(onBack = {
-                                navController.popBackStack()
+                                navController.navigateUp()
                             })
                         }
                     }

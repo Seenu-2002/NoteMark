@@ -1,10 +1,5 @@
 package com.seenu.dev.android.notemark.presentation.onboarding
 
-import android.R.attr.bottom
-import android.R.attr.end
-import android.R.attr.height
-import android.R.attr.top
-import android.service.autofill.Validators.or
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -15,21 +10,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -38,10 +33,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.seenu.dev.android.notemark.R
+import com.seenu.dev.android.notemark.data.User
+import com.seenu.dev.android.notemark.presentation.UiState
 import com.seenu.dev.android.notemark.presentation.theme.NoteMarkTheme
 import com.seenu.dev.android.notemark.presentation.theme.onboardingBackground
 import com.seenu.dev.android.notemark.presentation.util.DeviceConfiguration
+import org.koin.androidx.compose.koinViewModel
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Preview
@@ -50,11 +50,43 @@ import com.seenu.dev.android.notemark.presentation.util.DeviceConfiguration
 )
 @Composable
 fun OnboardingScreen(
+    openApp: (User) -> Unit = {},
     onLogin: () -> Unit = {},
-    onGetStarted: () -> Unit = {}
+    onGetStarted: () -> Unit = {},
 ) {
     val activity = LocalActivity.current ?: return
     val windowSizeClass = calculateWindowSizeClass(activity)
+    val viewModel: OnboardingViewModel = koinViewModel()
+
+    val isUserLoggedIn by viewModel.isUserLoggedIn.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        if (isUserLoggedIn is UiState.Empty) {
+            Timber.d("Checking if user is logged in")
+            viewModel.checkIsUserLoggedIn()
+        }
+    }
+
+    when (val loginStatus = isUserLoggedIn) {
+        is UiState.Empty, is UiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+            return
+        }
+
+        is UiState.Success -> {
+            LaunchedEffect(Unit) {
+                val user = loginStatus.data
+                openApp(user)
+            }
+            return
+        }
+
+        is UiState.Error -> {
+            Timber.d("Login check failed :: ${loginStatus.message}")
+        }
+    }
 
     when (DeviceConfiguration.fromWindowSizeClass(windowSizeClass)) {
         DeviceConfiguration.MOBILE_PORTRAIT -> {

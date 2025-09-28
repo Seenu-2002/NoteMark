@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Base64
 import androidx.core.content.edit
 
-class EncryptedSharedPreference(
+class EncryptedSharedPreference constructor(
     private val prefName: String,
     private val context: Context,
     private val securityUtil: SecurityUtil,
